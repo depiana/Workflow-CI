@@ -6,7 +6,7 @@ import os
 
 def train_model(learning_rate, n_estimators):
     # Load dataset
-    df = pd.read_csv("StudentsPerformance_preprocessing/processed_data.csv")
+    df = pd.read_csv("StudentsPerformance_preprocessing.csv")
     X = df.drop("target", axis=1)
     y = df["target"]
 
