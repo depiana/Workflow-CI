@@ -23,10 +23,11 @@ jobs:
 
     - name: Run training script
       run: |
-        python MLProject/modelling.py
+        cd MLProject
+        python modelling.py
 
     - name: Upload model artifact
       uses: actions/upload-artifact@v4
       with:
         name: trained-model
-        path: model.pkl
+        path: MLProject/model.pkl
