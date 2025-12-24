@@ -1,56 +1,28 @@
-name: MLflow Project Pipeline (Auto Detect)
+name: MLflow CI Workflow
 
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
+    branches: [ "main" ]
 
 jobs:
-  build-train:
+  train:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      # 2. Setup Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
 
-      # 3. Install dependencies
-      - name: Install Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install mlflow pandas scikit-learn
+    # Perubahan 1: Pastikan semua library yang ada di conda.yaml terinstall di sini
+    - name: Install dependencies
+      run: |
+        pip install mlflow scikit-learn pandas joblib numpy matplotlib
 
-      # 4. Validasi dataset
-      - name: Check Dataset
-        run: |
-          echo "Checking StudentsPerformance_preprocessing.csv"
-          if [ ! -f "StudentsPerformance_preprocessing.csv" ]; then
-            echo "ERROR: Dataset StudentsPerformance_preprocessing.csv not found"
-            ls -R
-            exit 1
-          fi
-
-      # 5. Auto-detect MLproject & jalankan MLflow
-      - name: Execute MLflow Project
-        run: |
-          echo "Searching for MLproject file"
-          PROJECT_FILE=$(find . -type f -name "MLproject" | head -n 1)
-
-          if [ -z "$PROJECT_FILE" ]; then
-            echo "ERROR: MLproject file not found"
-            ls -R
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$PROJECT_FILE")
-          echo "MLflow project directory: $PROJECT_DIR"
-
-          mlflow run "$PROJECT_DIR" \
-            --entry-point main \
-            --env-manager=local
+    # Perubahan 2: Tambahkan --env-manager=local
+    - name: Run MLflow Project
+      run: |
+        mlflow run . --env-manager=local
