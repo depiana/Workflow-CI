@@ -1,4 +1,4 @@
-name: MLflow CI Pipeline
+name: MLflow Project Pipeline (Auto Detect)
 
 on:
   push:
@@ -6,23 +6,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  train:
+  build-train:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1. Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
+      # 2. Setup Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - name: Install dependencies
+      # 3. Install dependencies
+      - name: Install Dependencies
         run: |
           pip install --upgrade pip
           pip install mlflow pandas scikit-learn
 
-      - name: Run MLflow Project
+      # 4. Validasi dataset
+      - name: Check Dataset
         run: |
-          mlflow run . --env-manager=local
+          echo "Checking StudentsPerformance_preprocessing.csv"
+          if [ ! -f "StudentsPerformance_preprocessing.csv" ]; then
+            echo "ERROR: Dataset StudentsPerformance_preprocessing.csv not found"
+            ls -R
+            exit 1
+          fi
+
+      # 5. Auto-detect MLproject & jalankan MLflow
+      - name: Execute MLflow Project
+        run: |
+          echo "Searching for MLproject file"
+          PROJECT_FILE=$(find . -type f -name "MLproject" | head -n 1)
+
+          if [ -z "$PROJECT_FILE" ]; then
+            echo "ERROR: MLproject file not found"
+            ls -R
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$PROJECT_FILE")
+          echo "MLflow project directory: $PROJECT_DIR"
+
+          mlflow run "$PROJECT_DIR" \
+            --entry-point main \
+            --env-manager=local
