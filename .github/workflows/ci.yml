@@ -1,4 +1,4 @@
-name: MLflow CI Workflow
+name: CI Training Workflow
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Set up Python
@@ -17,12 +17,16 @@ jobs:
       with:
         python-version: "3.10"
 
-    # Perubahan 1: Pastikan semua library yang ada di conda.yaml terinstall di sini
     - name: Install dependencies
       run: |
-        pip install mlflow scikit-learn pandas joblib numpy matplotlib
+        pip install pandas scikit-learn joblib
 
-    # Perubahan 2: Tambahkan --env-manager=local
-    - name: Run MLflow Project
+    - name: Run training script
       run: |
-        mlflow run . --env-manager=local
+        python MLProject/modelling.py
+
+    - name: Upload model artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: trained-model
+        path: model.pkl
